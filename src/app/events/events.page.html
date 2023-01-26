@@ -1,0 +1,22 @@
+<ion-content>
+  <div id="container">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-slides #slides>
+            <ion-slide *ngFor="let photo of totalPhotos">
+              <img src="../../assets/events/{{photos[photo]}}" class="big-img" />
+            </ion-slide>
+          </ion-slides>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+  <div id="dvMarker">
+    <ion-button id="back"><ion-icon name="chevron-back-outline"></ion-icon></ion-button>
+    <ion-button id="btMarker" [style.opacity]="isPageBookmarked()?'1':'0.5'"><ion-icon name="bookmark"></ion-icon></ion-button>
+    <ion-button id="forward"><ion-icon name="chevron-forward-outline"></ion-icon></ion-button>
+  </div>
+  <canvas id="notebook" >
+  </canvas>
+</ion-content>

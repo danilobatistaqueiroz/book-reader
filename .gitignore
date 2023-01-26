@@ -66,3 +66,16 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+android
+src/assets/architecture
+src/assets/application
+src/assets/domains
+src/assets/events
+src/assets/integrating
+src/assets/introduction
+src/assets/menu
+src/assets/presentation
+src/assets/repositories
+src/assets/services
+src/assets/fotos

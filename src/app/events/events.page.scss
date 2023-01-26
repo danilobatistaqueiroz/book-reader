@@ -1,0 +1,27 @@
+#dvMarker {
+  position: fixed;
+  z-index: 9;
+  top:0;
+  left:0;
+}
+#btMarker {
+  z-index: 10;
+  opacity: 0.5;
+}
+#back {
+  opacity: 0.5;
+}
+#forward {
+  opacity: 0.5;
+}
+
+#notebook {
+  border: 1px solid black;
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:2;
+
+  width: 1000px;
+  height: 960px;
+}
