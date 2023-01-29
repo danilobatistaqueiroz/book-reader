@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonSlides } from '@ionic/angular';
 import { CapacitorVolumeButtons, VolumeButtonPressed } from 'capacitor-volume-buttons';
 
 @Component({
@@ -55,7 +56,12 @@ export class IntroductionPage implements OnInit {
   "20230124_234611.jpg",
   "20230124_234616.jpg"]
 
-  @ViewChild('slides') slider!: any;
+  @ViewChild('slides') slider!: IonSlides;
+
+  page: number = 0;
+  chapter: string = 'events';
+
+  public screenOff: boolean = false;
 
   constructor() { }
 
@@ -75,6 +81,40 @@ export class IntroductionPage implements OnInit {
       CapacitorVolumeButtons.removeAllListeners();
     };
 
+  }
+
+  touch(e:any) {
+    console.log(e);
+    
+  }
+
+  untouch(e:any) {
+    console.log(e);
+    
+  }
+
+  isPageBookmarked() {
+    if (this.getBookmarkedPages().find(p => p == this.page.toString())) {
+      return true;
+    }
+    return false;
+  }
+
+  private getBookmarkedPages():string[] {
+    let pagesMarked = localStorage.getItem(`bookmarkers_${this.chapter}`);
+    let all:string[] = [];
+    if(pagesMarked)
+      all = pagesMarked.split(',');
+    return all;
+  }
+
+  private bookmarkPage(){
+    let all = this.getBookmarkedPages();
+    if(all.find(p => p==this.page.toString()))
+      all = all.filter(p => p!=this.page.toString());
+    else
+      all.push(this.page.toString());
+    localStorage.setItem(`bookmarkers_${this.chapter}`,all.toString());
   }
 
 }

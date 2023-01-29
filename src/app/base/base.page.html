@@ -1,0 +1,28 @@
+<ion-content>
+  <div id="container">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-slides #slides id="background">
+            <ion-slide *ngFor="let photo of totalPhotos">
+              <img src="../../assets/{{chapter}}/{{photos[photo]}}" class="big-img" />
+            </ion-slide>
+          </ion-slides>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+  <div id="dvMarker">
+    <ion-button id="back" color="medium" size="small"><ion-icon name="chevron-back-outline"></ion-icon></ion-button>
+    <ion-button id="btMarker" color="medium" size="small" [style.opacity]="isPageBookmarked()?'1':'0.5'"><ion-icon name="bookmark"></ion-icon></ion-button>
+    <ion-button id="forward" color="medium" size="small"><ion-icon name="chevron-forward-outline"></ion-icon></ion-button>
+  </div>
+  <canvas id="notebook">
+  </canvas>
+  <ion-button id="btPage" color="medium" size="small" [disabled]="true" >{{page}}</ion-button>
+  <div id="dvRubber">
+    <ion-button id="btHome" color="medium" size="small"><ion-icon name="home"></ion-icon></ion-button>
+    <ion-button id="btRubber" color="medium" size="small"><ion-icon name="close-outline"></ion-icon></ion-button>
+    <ion-button id="btEye" color="medium" size="small"><ion-icon [name]="screenOff?'eye':'eye-off-outline'"></ion-icon></ion-button>
+  </div>
+</ion-content>

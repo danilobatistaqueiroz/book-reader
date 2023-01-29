@@ -47,6 +47,14 @@ const routes: Routes = [
     path: 'events',
     loadChildren: () => import('./events/events.module').then( m => m.EventsPageModule)
   },
+  {
+    path: 'bookmarks',
+    loadChildren: () => import('./bookmarks/bookmarks.module').then( m => m.BookmarksPageModule)
+  },
+  {
+    path: 'base',
+    loadChildren: () => import('./base/base.module').then( m => m.BasePageModule)
+  },
 ];
 
 @NgModule({

@@ -94,4 +94,134 @@ e no typescript:
 
 
 
+
+
+## Criando o Splash Screen
+
+criar uma nova Empty Activity e nomeá-la SplashActivity:  
+SplashActivity.java
+```java
+package io.ionic.booksreader;
+
+import android.content.Intent;
+import android.os.Handler;
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+
+public class SplashActivity extends AppCompatActivity {
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    new Handler().postDelayed(new Runnable() {
+
+
+      @Override
+      public void run() {
+        // This method will be executed once the timer is over
+        Intent i = new Intent(SplashActivity.this, MainActivity.class);
+        startActivity(i);
+        finish();
+      }
+    }, 3000);
+  }
+}
+
+```
+
+Criar um arquivo em res/drawable/splash_background.xml  
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="https://schemas.android.com/apk/res/android">
+
+<item android:drawable="@android:color/black" />
+<item>
+  <bitmap
+    android:gravity="center"
+    android:src="@drawable/splash" />
+</item>
+</layer-list>
+```
+
+Adicionar um style no arquivo res/layout/styles.xml  
+```xml
+    <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+      <item name="android:background">@drawable/splash</item>
+    </style>
+```
+
+res/layout/activity_splash.xml
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context=".SplashActivity">
+
+  <ImageView
+    android:id="@+id/imageView"
+    android:layout_width="72dp"
+    android:layout_height="72dp"
+    android:src="@drawable/splash"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+
+
 Samsung M31 Galaxy tem width x height de: 1080×2340 pixels
+
+
+
+
+
+## Criando o ícone do app
+
+no Android Studio:  
+clique com o direito do mouse na pasta res e escolha novo "Image Asset"
+
+selecione a imagem de 1024x1024 de preferência png
+
+escolha Trim
+
+em Background Layer escolha uma cor
+
+next irá sobreescrever os ícones default
+
+na próxima tela, escolha em "Res Directory" a opção "main"
+
+também é possível gerar os ícones pelo site:  
+https://icon.kitchen
+
+
+## Gerando a imagem de Splash Screen
+
+https://apetools.webprofusion.com/#/tools/imagegorilla
+
+selecione uma imagem 2732x2732 de preferência png
+
+descompactar o zip, entrar na pasta bundle/android
+
+renomear todos os arquivos screen.png para splash.png
+
+copie as pastas:  
+drawable-hdpi,
+drawable-mdpi,
+drawable-xhdpi,
+drawable-xxhdpi,
+drawable-xxxhdpi
+
+para:
+drawable-port-hdpi,
+drawable-port-mdpi,
+drawable-port-xhdpi,
+drawable-port-xxhdpi,
+drawable-port-xxxhdpi
+
+copiar para a pasta android/app/src/main/res

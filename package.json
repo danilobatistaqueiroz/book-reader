@@ -26,6 +26,8 @@
     "@capacitor/haptics": "4.1.0",
     "@capacitor/keyboard": "4.1.1",
     "@capacitor/status-bar": "4.1.1",
+    "@ionic-native/core": "^5.36.0",
+    "@ionic-native/insomnia": "^5.36.0",
     "@ionic/angular": "^6.1.9",
     "capacitor-volume-buttons": "^1.0.0",
     "cordova-plugin-screen-orientation": "^3.0.2",

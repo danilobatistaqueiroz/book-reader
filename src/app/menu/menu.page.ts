@@ -13,24 +13,4 @@ export class MenuPage implements OnInit {
     window.screen.orientation.lock('landscape');
   }
 
-  introduction() {
-
-  }
-  domains() {
-
-  }
-  integrating() {
-
-  }
-
-  repositories() {
-
-  }
-  services() {
-
-  }
-  architecture() {
-    
-  }
-
 }

@@ -6,13 +6,9 @@
 }
 #btMarker {
   z-index: 10;
-  opacity: 0.5;
 }
-#back {
-  opacity: 0.5;
-}
-#forward {
-  opacity: 0.5;
+ion-button {
+  opacity: 0.4;
 }
 
 #notebook {
@@ -24,4 +20,15 @@
 
   width: 1000px;
   height: 960px;
+}
+
+#dvRubber {
+  position: fixed;
+  z-index: 8;
+  top:90%;
+}
+
+.big-img {
+  height:97.4vh;
+  max-height: 97.4vh;
 }
