@@ -5,22 +5,34 @@
 </ion-header>
 
 <ion-content>
+  <img src="../../assets/cover.jpg" class="big-img" />
   <ion-grid>
     <ion-row>
-      <ion-col><ion-button [routerLink]="['/introduction']">introduction</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/domains']">domains</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/integrating']">integrating</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/presentation']">presentation</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/introduction']">1-introduction</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/domains']">2-domains</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/context']">3-context</ion-button></ion-col>
     </ion-row>
     <ion-row>
-      <ion-col><ion-button [routerLink]="['/repositories']">repositories</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/services']">services</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/architecture']">architecture</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/architecture']">4-architecture</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/entities']">5-entities</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/vos']">6-vos</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/services']">7-services</ion-button></ion-col>
     </ion-row>
     <ion-row>
-      <ion-col><ion-button [routerLink]="['/application']">application</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/events']">events</ion-button></ion-col>
-      <ion-col><ion-button [routerLink]="['/presentation']">presentation</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/events']">8-events</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/modules']">9-modules</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/aggregates']">10-aggregates</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/factories']">11-factories</ion-button></ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col><ion-button fill="solid" [routerLink]="['/repositories']">12-repositories</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/integrating']">13-integrating</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/application']">14-application</ion-button></ion-col>
+      <ion-col><ion-button fill="solid" [routerLink]="['/prospecting']">15-prospecting</ion-button></ion-col>
     </ion-row>
   </ion-grid>
   <ion-button [routerLink]="['/bookmarks']" fill="clear"><ion-icon name="bookmark"></ion-icon></ion-button>
+  <ion-button fill="clear" (click)="rotate()"><ion-icon [name]="portrait?'phone-portrait-outline':'phone-landscape-outline'"></ion-icon></ion-button>
+  <ion-button fill="clear" (click)="toggleDark()"><ion-icon name="contrast-outline"></ion-icon></ion-button>
 </ion-content>

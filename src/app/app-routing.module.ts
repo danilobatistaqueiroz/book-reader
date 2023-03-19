@@ -55,6 +55,42 @@ const routes: Routes = [
     path: 'base',
     loadChildren: () => import('./base/base.module').then( m => m.BasePageModule)
   },
+  {
+    path: 'takenotes',
+    loadChildren: () => import('./takenotes/takenotes.module').then( m => m.TakenotesPageModule)
+  },
+  {
+    path: 'context',
+    loadChildren: () => import('./context/context.module').then( m => m.ContextPageModule)
+  },
+  {
+    path: 'entities',
+    loadChildren: () => import('./entities/entities.module').then( m => m.EntitiesPageModule)
+  },
+  {
+    path: 'vos',
+    loadChildren: () => import('./vos/vos.module').then( m => m.VosPageModule)
+  },
+  {
+    path: 'modules',
+    loadChildren: () => import('./modules/modules.module').then( m => m.ModulesPageModule)
+  },
+  {
+    path: 'aggregates',
+    loadChildren: () => import('./aggregates/aggregates.module').then( m => m.AggregatesPageModule)
+  },
+  {
+    path: 'factories',
+    loadChildren: () => import('./factories/factories.module').then( m => m.FactoriesPageModule)
+  },
+  {
+    path: 'prospecting',
+    loadChildren: () => import('./prospecting/prospecting.module').then( m => m.ProspectingPageModule)
+  },
+  {
+    path: 'rests',
+    loadChildren: () => import('./rests/rests.module').then( m => m.RestsPageModule)
+  },
 ];
 
 @NgModule({

@@ -1,17 +1,18 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonSlides } from '@ionic/angular';
-import { CapacitorVolumeButtons, VolumeButtonPressed } from 'capacitor-volume-buttons';
+import { Component, OnInit } from '@angular/core';
+import { BasePage } from '../base/base.page';
 
 @Component({
   selector: 'app-introduction',
-  templateUrl: './introduction.page.html',
-  styleUrls: ['./introduction.page.scss'],
+  templateUrl: '../base/base.page.html',
+  styleUrls: ['../base/base.page.scss'],
 })
-export class IntroductionPage implements OnInit {
+export class IntroductionPage extends BasePage implements OnInit {
 
-  totalPhotos: number[] = [...Array(43 + 1).keys()];
+  override chapter: string = 'introduction';
 
-  photos: string[] = ["000.jpg", 
+  override totalPhotos!: number[];
+
+  override photos: string[] = [
   "20230124_232932.jpg",
   "20230124_232954.jpg",
   "20230124_233356.jpg",
@@ -54,67 +55,62 @@ export class IntroductionPage implements OnInit {
   "20230124_234550.jpg",
   "20230124_234605.jpg",
   "20230124_234611.jpg",
-  "20230124_234616.jpg"]
+  "20230124_234616.jpg",
+  "20230130_205526.jpg",
+  "20230130_205533.jpg",
+  "20230130_205542.jpg",
+  "20230130_205548.jpg",
+  "20230130_205634.jpg",
+  "20230130_205644.jpg",
+  "20230130_205717.jpg",
+  "20230130_205723.jpg",
+  "20230130_205731.jpg",
+  "20230130_205745.jpg",
+  "20230130_205756.jpg",
+  "20230130_205801.jpg",
+  "20230130_205820.jpg",
+  "20230130_205827.jpg",
+  "20230130_205834.jpg",
+  "20230130_205844.jpg",
+  "20230130_205920.jpg",
+  "20230130_205928.jpg",
+  "20230130_205949.jpg",
+  "20230130_205955.jpg",
+  "20230130_210026.jpg",
+  "20230130_210031.jpg",
+  "20230130_210047.jpg",
+  "20230130_210052.jpg",
+  "20230130_210104.jpg",
+  "20230130_210111.jpg",
+  "20230130_210117.jpg",
+  "20230130_210123.jpg",
+  "20230130_210208.jpg",
+  "20230130_210212.jpg",
+  "20230130_210226.jpg",
+  "20230130_210232.jpg",
+  "20230130_210242.jpg",
+  "20230130_210247.jpg",
+  "20230130_210257.jpg",
+  "20230130_210303.jpg",
+  "20230130_210318.jpg",
+  "20230130_210325.jpg",
+  "20230130_210332.jpg",
+  "20230130_210339.jpg",
+  "20230130_210403.jpg",
+  "20230130_210410.jpg",
+  "20230130_210424.jpg",
+  "20230130_210430.jpg",
+  "20230130_210504.jpg",
+  "20230130_210517.jpg",
+  "20230130_210545.jpg",
+  "20230130_210553.jpg",
+  "20230130_210557.jpg",
+  "20230130_210607.jpg"
+]
 
-  @ViewChild('slides') slider!: IonSlides;
-
-  page: number = 0;
-  chapter: string = 'events';
-
-  public screenOff: boolean = false;
-
-  constructor() { }
-
-  ngOnInit() {
-
-    const onVolumeButtonPressed = ({ direction }: VolumeButtonPressed) => {
-      if (direction === 'up') {
-        this.slider.slidePrev();
-      } else {
-        this.slider.slideNext();
-      }
-    };
-
-    CapacitorVolumeButtons.addListener('volumeButtonPressed', onVolumeButtonPressed);
-
-    return () => {
-      CapacitorVolumeButtons.removeAllListeners();
-    };
-
-  }
-
-  touch(e:any) {
-    console.log(e);
-    
-  }
-
-  untouch(e:any) {
-    console.log(e);
-    
-  }
-
-  isPageBookmarked() {
-    if (this.getBookmarkedPages().find(p => p == this.page.toString())) {
-      return true;
-    }
-    return false;
-  }
-
-  private getBookmarkedPages():string[] {
-    let pagesMarked = localStorage.getItem(`bookmarkers_${this.chapter}`);
-    let all:string[] = [];
-    if(pagesMarked)
-      all = pagesMarked.split(',');
-    return all;
-  }
-
-  private bookmarkPage(){
-    let all = this.getBookmarkedPages();
-    if(all.find(p => p==this.page.toString()))
-      all = all.filter(p => p!=this.page.toString());
-    else
-      all.push(this.page.toString());
-    localStorage.setItem(`bookmarkers_${this.chapter}`,all.toString());
-  }
+override ngOnInit() {
+  this.totalPhotos = [...Array(this.photos.length).keys()];
+  super.ngOnInit();
+}
 
 }

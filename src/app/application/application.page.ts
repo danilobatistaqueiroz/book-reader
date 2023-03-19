@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { BasePage } from '../base/base.page';
 
 @Component({
@@ -7,6 +7,8 @@ import { BasePage } from '../base/base.page';
   styleUrls: ['../base/base.page.scss'],
 })
 export class ApplicationPage extends BasePage {
+
+  override chapter: string = 'application';
 
   override totalPhotos: number[] = [...Array(31).keys()];
 
@@ -44,5 +46,8 @@ export class ApplicationPage extends BasePage {
     '20230125_142343.jpg'
   ];
 
-  override chapter: string = 'application';
+  override ngOnInit() {
+    this.totalPhotos = [...Array(this.photos.length).keys()];
+    super.ngOnInit();
+  }
 }

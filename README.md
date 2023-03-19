@@ -24,6 +24,9 @@ npx cap sync
 npx cap update
 ionic build
 ionic cap copy
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ionic capacitor run android --livereload --external
 ```
 
 
@@ -217,7 +220,7 @@ drawable-xhdpi,
 drawable-xxhdpi,
 drawable-xxxhdpi
 
-para:
+para:  
 drawable-port-hdpi,
 drawable-port-mdpi,
 drawable-port-xhdpi,
@@ -225,3 +228,77 @@ drawable-port-xxhdpi,
 drawable-port-xxxhdpi
 
 copiar para a pasta android/app/src/main/res
+
+
+## Animated Splash Screen
+
+https://loading.io/
+https://tobiasahlin.com/spinkit/
+
+
+## Trabalhando as imagens
+
+for file in *.jpg; do convert $file -resize 30% e$file; done
+for file in *.jpg; do convert $file -resize 25% -rotate 90 i$file; done
+
+
+# Firebase Emulator  
+
+npm i firebase
+
+npm install -g firebase-tools
+
+firebase projects:list
+
+firebase init
+firebase init emulators
+firebase emulators:start
+
+firebase serve
+
+
+## Adicionando o Firebase
+
+ng add @angular/fire
+
+logar no site do Firebase console
+
+criar um app
+adicionar autenticação
+criar uma coleção no firestore
+
+gravar os penmarks    [chapter][page][x1,y1,x2,y2]
+gravar os bookmarks   [chapter][page]
+gravar as páginas atuais 
+gravar as notas 
+
+ler ao carregar
+
+
+
+
+
+
+npm install firebase
+
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDESZDOuoBGnqW_sMjKAdiKjxx-7PuIb7k",
+  authDomain: "booksreader-e1dd5.firebaseapp.com",
+  projectId: "booksreader-e1dd5",
+  storageBucket: "booksreader-e1dd5.appspot.com",
+  messagingSenderId: "470342136480",
+  appId: "1:470342136480:web:b289764499ee79b7f6cfc5"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+
+

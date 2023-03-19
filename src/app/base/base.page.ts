@@ -1,9 +1,15 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CapacitorVolumeButtons, VolumeButtonPressed } from 'capacitor-volume-buttons';
+import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectorRef } from '@angular/core';
+
 import { Insomnia } from '@ionic-native/insomnia/ngx';
-import { IonSlides } from '@ionic/angular';
+import { AlertController, IonContent, IonSlides, ModalController } from '@ionic/angular';
+
+import { CapacitorVolumeButtons, VolumeButtonPressed } from 'capacitor-volume-buttons';
+
 import { Marker } from '../Marker';
+import { RestsPage } from '../rests/rests.page';
+import { TakenotesPage } from '../takenotes/takenotes.page';
 
 @Component({
   selector: 'app-base',
@@ -12,25 +18,40 @@ import { Marker } from '../Marker';
 })
 export class BasePage implements OnInit, AfterViewInit {
   
+    @ViewChild('ioncontent') ioncontent!: IonContent;
     @ViewChild('slides') slider!: IonSlides;
   
     page: number = 0;
-
     totalPhotos: number[]=[]
     photos: string[]=[]
     chapter: string=''
-  
-    markers: Marker[] = [];
-  
-    public screenOff: boolean = false;
-  
-    constructor(private route: ActivatedRoute, private router: Router, private insomnia: Insomnia) { }
+    screenOff: boolean = false;
+    zoom:boolean=true;
+    timeout:number=0;
+    timer:number=0;
+    timeoutMinutes:number=0;
+    timerMinutes:number=0;
+
+    private penmarkers: Marker[] = [];
+    private notes: string='';
+    private allHideTimeout:NodeJS.Timeout[] = []
+
+    constructor(
+      private route: ActivatedRoute, 
+      private insomnia: Insomnia,
+      private modalCtrl: ModalController,
+      private alertController: AlertController,
+      private changeDetectorRef: ChangeDetectorRef) { 
+
+      }
   
     ngOnInit() {
       this.screenOff = (localStorage.getItem('screenOff')??'false').toLowerCase()==='true';
-      this.rubberDraggable();
-      this.markerDraggable();
       this.volumeButtons();
+      this.zoom=true;
+      this.notebookOn();
+      this.notes = localStorage.getItem(`notes_${this.chapter}`)??'';
+      this.changeDetectorRef.detectChanges();
     }
   
     ngAfterViewInit(): void {
@@ -41,7 +62,40 @@ export class BasePage implements OnInit, AfterViewInit {
         this.page = parseInt(localStorage.getItem(`currentPage_${this.chapter}`)??'0')
       }
       this.slider.slideTo(this.page,200);
-      this.penmarks();
+      this.loadPenmarkers();
+      this.startTimerMinutes();
+    }
+
+    startTimerMinutes(){
+      this.timerMinutes=1;
+      this.timeoutMinutes = setInterval(this.countrMinutes,1000,this);
+      localStorage.setItem('active_timer_minutes',this.timeoutMinutes.toString());
+    }
+
+    async takenotes() {
+      const modal = await this.modalCtrl.create({
+        component: TakenotesPage,
+        componentProps: { 
+          notes: this.notes,
+        }
+      });
+      modal.present();
+  
+      const { data, role } = await modal.onWillDismiss();
+  
+      if (role === 'confirm') {
+        this.notes = data??'';
+        localStorage.setItem(`notes_${this.chapter}`,this.notes);
+      }
+    }
+
+    changeZoom() {
+      this.zoom=!this.zoom;
+      if(this.zoom==false) {
+        //this.notebookOn();
+      } else {
+        //this.notebookOff();
+      }
     }
   
     home() {
@@ -50,7 +104,7 @@ export class BasePage implements OnInit, AfterViewInit {
   
     eye() {
       this.screenOff = !this.screenOff;
-      this.screenOff?this.insomnia.keepAwake():this.insomnia.allowSleepAgain();
+      this.screenOff?this.insomnia.allowSleepAgain():this.insomnia.keepAwake();
       localStorage.setItem('screenOff',String(this.screenOff));
     }
   
@@ -59,82 +113,167 @@ export class BasePage implements OnInit, AfterViewInit {
       const context = notebook.getContext('2d');
       context!.clearRect(0, 0, notebook.width, notebook.height);
       localStorage.setItem(`penmarkers_${this.chapter}_${this.page}`,'[]');
-      this.markers = [];
+      this.penmarkers = [];
+    }
+    
+    submit = (data:any) => {
+      if(data.page==undefined)
+        this.page = data;
+      else 
+        this.page = data.page;
+      this.slider.slideTo(this.page,200);
+      localStorage.setItem(`currentPage_${this.chapter}`,String(this.page))
     }
 
-    hideBtPage(){
-      (document.querySelector("#btPage") as HTMLButtonElement)!.style.display = 'none';
+    async choosePage() {
+      const alert = await this.alertController.create({
+        header: 'Goto page',
+        buttons: [
+          {
+            text: 'Cancel'
+          },
+          {
+            text: 'OK',
+            handler: this.submit,
+          },
+        ],
+        inputs: [
+          {
+            name: 'page',
+            placeholder: 'Page',
+          },
+        ],
+      });
+      await alert.present();
+      let text = document?.querySelector('.alert-input');
+      (text as HTMLInputElement).focus();
+      text?.addEventListener('keyup', (e) => {
+        if ((e as KeyboardEvent).key=="Enter") {
+          this.submit((text as HTMLInputElement).value);
+          alert.dismiss(this.submit((text as HTMLInputElement).value));
+        }
+      });
     }
 
-    allHideTimeout:NodeJS.Timeout[] = []
-  
+    private countrMinutes(self:this) {
+      self.timerMinutes=self.timerMinutes+1;
+      localStorage.setItem('counter_minutes',String(self.timerMinutes));
+      self.changeDetectorRef?.detectChanges();
+      if(self.timerMinutes>30) {
+        self.timerMinutes=0;
+      }
+    }
+    private countr(self:this) {
+      self.timer=self.timer+1;
+      self.changeDetectorRef?.detectChanges();
+      if(self.timer>300) {
+        clearInterval(self.timeout);
+        self.timer=0;
+      }
+    }
+    async chronometer() {
+      if(this.timer==0 || isNaN(this.timer))
+        this.startTimer();
+    }
+    timerToggle() {
+      if(this.timer==0 || isNaN(this.timer)){
+        this.startTimer();
+        (document.querySelector("#btTimer") as HTMLButtonElement)!.style.opacity = '0.8';
+        (document.querySelector("#btTimerMinutes") as HTMLButtonElement)!.style.opacity = '0.8';
+      } else {
+        this.stopTimer();
+      }
+    }
+    startTimer(){
+      this.timer=1;
+      this.timeout = setInterval(this.countr,1000,this);
+      localStorage.setItem('active_timer',String(this.timeout));
+    }
+    stopTimer() {
+      clearInterval(this.timeout);
+      this.timer=0;
+      (document.querySelector("#btTimer") as HTMLButtonElement)!.style.opacity = '0.3';
+      (document.querySelector("#btTimerMinutes") as HTMLButtonElement)!.style.opacity = '0.3';
+    }
+
+    async rests() {
+      const modal = await this.modalCtrl.create({
+        component: RestsPage
+      });
+      modal.present();
+    }
+
+    isBottom:boolean=false;
+    backs:number=0;
     back() {
-      if(this.page==0) return;
-      this.slider.slidePrev();
-      this.page--;
-      this.penmarks();
-      this.allHideTimeout.forEach(t => clearTimeout(t));
-      this.allHideTimeout.push(setTimeout(this.hideBtPage,1000));
-      (document.querySelector("#btPage") as HTMLButtonElement)!.style.display = 'inline-block';
-    }
-  
-    forward() {
-      if(this.page==30) return;
-      this.slider.slideNext();
-      this.page++;
-      this.penmarks();
-      this.allHideTimeout.forEach(t => clearTimeout(t));
-      this.allHideTimeout.push(setTimeout(this.hideBtPage,1000));
-      (document.querySelector("#btPage") as HTMLButtonElement)!.style.display = 'inline-block';
-    }
-  
-    penmarks() {
-      this.markers = JSON.parse(localStorage.getItem(`penmarkers_${this.chapter}_${this.page}`)??'[]');
-      const notebook:HTMLCanvasElement = document.getElementById('notebook') as HTMLCanvasElement;
-      const context = notebook.getContext('2d');
-      context!.clearRect(0, 0, notebook.width, notebook.height);
-      setTimeout(this.drawLines,300,context,this.markers,this.drawLine);
-    }
-  
-    drawLines(context:any,markers:Marker[],drawLine:any) {
-      for(let mark of markers) {
-        drawLine(context, mark.x1, mark.y1, mark.x2, mark.y2);
+      if(this.zoom) {
+        if (this.isBottom==true) {
+          this.isBottom=false;
+          this.ioncontent.scrollToTop();
+          this.loadPenmarkers();
+        } else {
+          this.isBottom=true;
+          this.pageBack();
+          this.ioncontent.scrollToBottom();
+        }
+      } else {
+        this.pageBack();
       }
     }
   
-    markerDraggable() {
-      const dv:HTMLDivElement = document.getElementById("dvMarker") as HTMLDivElement;
-      const bts:HTMLButtonElement[]=[]
-      bts.push(document.getElementById("btMarker") as HTMLButtonElement);
-      bts.push(document.getElementById("back") as HTMLButtonElement);
-      bts.push(document.getElementById("forward") as HTMLButtonElement);
-      this.dragElement(dv,bts);
+    forward() {
+      if(this.zoom) {
+        if (this.isBottom==false) {
+          this.isBottom=true;
+          this.ioncontent.scrollToBottom();
+          this.loadPenmarkers();
+        } else {
+          this.isBottom=false;
+          this.pageForward();
+          this.ioncontent.scrollToTop();
+        }
+      } else {
+        this.pageForward();
+      }
     }
-  
-    rubberDraggable() {
-      const dv:HTMLDivElement = document.getElementById("dvRubber") as HTMLDivElement;
-      const bts:HTMLButtonElement[]=[]
-      bts.push(document.getElementById("btRubber") as HTMLButtonElement);
-      bts.push(document.getElementById("btHome") as HTMLButtonElement);
-      bts.push(document.getElementById("btEye") as HTMLButtonElement);
-      this.dragElement(dv,bts);
+
+    pageForward() {
+      this.backs=0;
+      if(this.page==this.totalPhotos.length) return;
+      this.slider.slideNext();
+      this.page++;
+      this.loadPenmarkers();
+      this.allHideTimeout.forEach(t => clearTimeout(t));
+      this.allHideTimeout.push(setTimeout(this.hideBtPage,3000));
+      this.showBtPage();
+      localStorage.setItem(`currentPage_${this.chapter}`,String(this.page));
+      this.changeDetectorRef.detectChanges();
     }
-  
+
+    pageBack() {
+      this.backs++;
+      if(this.backs==3){
+        this.backs=0;
+        this.timerToggle();
+      }
+      if(this.page==0) return;
+      this.slider.slidePrev();
+      this.page--;
+      this.loadPenmarkers();
+      this.allHideTimeout.forEach(t => clearTimeout(t));
+      this.allHideTimeout.push(setTimeout(this.hideBtPage,3000));
+      this.showBtPage();
+      localStorage.setItem(`currentPage_${this.chapter}`,String(this.page));
+      this.changeDetectorRef.detectChanges();
+    }
+
     isPageBookmarked() {
       if (this.getBookmarkedPages().find(p => p == this.page.toString())) {
         return true;
       }
       return false;
     }
-  
-    private getBookmarkedPages():string[] {
-      let pagesMarked = localStorage.getItem(`bookmarkers_${this.chapter}`);
-      let all:string[] = [];
-      if(pagesMarked)
-        all = pagesMarked.split(',');
-      return all;
-    }
-  
+
     bookmarkPage() {
       let all = this.getBookmarkedPages();
       if(all.find(p => p==this.page.toString()))
@@ -144,12 +283,57 @@ export class BasePage implements OnInit, AfterViewInit {
       localStorage.setItem(`bookmarkers_${this.chapter}`,all.toString());
     }
   
-    startNotebook() {
+    private hideBtPage(){
+      (document.querySelector("#btPage") as HTMLButtonElement)!.style.opacity = '0.3';
+    }
+    private showBtPage(){
+      (document.querySelector("#btPage") as HTMLButtonElement)!.style.opacity = '0.8';
+    }
+
+    private loadPenmarkers() {
+      this.penmarkers = []
+      if(this.zoom) {
+        if(this.isBottom) {
+          this.penmarkers = JSON.parse(localStorage.getItem(`penmarkers_zoom_bottom_${this.chapter}_${this.page}`)??'[]');
+        } else {
+          this.penmarkers = JSON.parse(localStorage.getItem(`penmarkers_zoom_top_${this.chapter}_${this.page}`)??'[]');
+        }
+      } else {
+        this.penmarkers = JSON.parse(localStorage.getItem(`penmarkers_${this.chapter}_${this.page}`)??'[]');
+      }
+      const notebook:HTMLCanvasElement = document.getElementById('notebook') as HTMLCanvasElement;
+      const context = notebook.getContext('2d');
+      context!.clearRect(0, 0, notebook.width, notebook.height);
+      setTimeout(this.drawLines,300,context,this.penmarkers,this.drawLine);
+    }
+  
+    private drawLines(context:any,markers:Marker[],drawLine:any) {
+      for(let mark of markers) {
+        drawLine(context, mark.x1, mark.y1, mark.x2, mark.y2);
+      }
+    }
+
+    private getBookmarkedPages():string[] {
+      let pagesMarked = localStorage.getItem(`bookmarkers_${this.chapter}`);
+      let all:string[] = [];
+      if(pagesMarked)
+        all = pagesMarked.split(',');
+      return all;
+    }
+  
+    private notebookOff() {
+      const notebook:HTMLCanvasElement = document.getElementById('notebook') as HTMLCanvasElement;
+      notebook.style.display='none';
+    }
+    private notebookOn() {
+      const notebook:HTMLCanvasElement = document.getElementById('notebook') as HTMLCanvasElement;
+      notebook.style.display='block';
+    }
+  
+    private startNotebook() {
       
       let isDrawing = false;
-      let x = 0;
-      let y = 0;
-      let x0 = 0;
+      let x=0,y=0,x1=0,x2=0,y1=0,y2=0;
       
       const notebook:HTMLCanvasElement = document.getElementById('notebook') as HTMLCanvasElement;
       const context = notebook.getContext('2d');
@@ -159,30 +343,49 @@ export class BasePage implements OnInit, AfterViewInit {
       notebook.width=w;
       notebook.height=h;
       
-      this.markers = JSON.parse(localStorage.getItem(`penmarkers_${this.chapter}_${this.page}`)??'[]');
-      for(let mark of this.markers) {
+      this.penmarkers = JSON.parse(localStorage.getItem(`penmarkers_${this.chapter}_${this.page}`)??'[]');
+      for(let mark of this.penmarkers) {
         this.drawLine(context,mark.x1,mark.y1,mark.x2,mark.y2);
       }
 
       notebook.addEventListener('mousedown', (e) => {
         x = e.offsetX;
-        x0 = x;
+        x1 = x;
         y = e.offsetY;
+        y1 = y
         isDrawing = true;
       });
       
       notebook.addEventListener('mousemove', (e) => {
-        if (isDrawing) {
-          this.drawLine(context, x, y, e.offsetX, y);
-          x = e.offsetX;
+        //if (isDrawing) {
+          //this.drawLine(context, x, y, e.offsetX, y);
+          //x = e.offsetX;
+        //}
+      });
+
+      window.addEventListener('keydown', (e:KeyboardEvent) => {
+        if (e.key == "ArrowRight") {
+          this.forward();
+        } else if (e.key == "ArrowLeft") {
+          this.back();
         }
       });
       
       window.addEventListener('mouseup', (e) => {
         if (isDrawing) {
-          this.drawLine(context, x, y, e.offsetX, y);
-          this.markers.push({x1:x0, y1:y, x2:x, y2:y});
-          localStorage.setItem(`penmarkers_${this.chapter}_${this.page}`,JSON.stringify(this.markers));
+          x2 = e.offsetX;
+          y2 = e.offsetY;
+          this.drawLine(context, x, y, x2, y2);
+          this.penmarkers.push({x1:x1, y1:y1, x2:x2, y2:y2});
+          if(this.zoom) {
+            if(this.isBottom) {
+              localStorage.setItem(`penmarkers_zoom_bottom_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+            } else {
+              localStorage.setItem(`penmarkers_zoom_top_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+            }
+          } else {
+            localStorage.setItem(`penmarkers_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+          }
           x = 0;
           y = 0;
           isDrawing = false;
@@ -191,22 +394,33 @@ export class BasePage implements OnInit, AfterViewInit {
       
       notebook.addEventListener('touchstart', (e:TouchEvent) => {
         x = e.touches[0]?.clientX;
-        x0 = x;
+        x1 = x;
         y = e.touches[0]?.clientY;
+        y1 = y;
         isDrawing = true;
       });
       notebook.addEventListener('touchmove', (e:TouchEvent) => {
-        if (isDrawing) {
-          this.drawLine(context, x, y, e.changedTouches[0].pageX, y);
-          x = e.changedTouches[0].pageX;
-        }
+        // if (isDrawing) {
+        //   this.drawLine(context, x, y, e.changedTouches[0].pageX, y);
+        //   x = e.changedTouches[0].pageX;
+        // }
       });
       notebook.addEventListener('touchend', (e:TouchEvent) => {
         if (isDrawing) {
           if (e.changedTouches[0]){
-            this.drawLine(context, x, y, e.changedTouches[0].clientX, y);
-            this.markers.push({x1:x0, y1:y, x2:x, y2:y});
-            localStorage.setItem(`penmarkers_${this.chapter}_${this.page}`,JSON.stringify(this.markers));
+            x2 = e.changedTouches[0].clientX;
+            y2 = e.changedTouches[0].clientY;
+            this.drawLine(context, x, y, x2, y2);
+            this.penmarkers.push({x1:x1, y1:y1, x2:x2, y2:y2});
+            if(this.zoom) {
+              if(this.isBottom) {
+                localStorage.setItem(`penmarkers_zoom_bottom_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+              } else {
+                localStorage.setItem(`penmarkers_zoom_top_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+              }
+            } else {
+              localStorage.setItem(`penmarkers_${this.chapter}_${this.page}`,JSON.stringify(this.penmarkers));
+            }
             x = 0;
             y = 0;
             isDrawing = false;
@@ -216,116 +430,24 @@ export class BasePage implements OnInit, AfterViewInit {
   
     }
   
-    drawLine(context:any, x1:number, y1:number, x2:number, y2:number) {
+    private drawLine(context:any, x1:number, y1:number, x2:number, y2:number) {
       context.beginPath();
-      context.strokeStyle = 'rgba(255,255,0,0.6)';
-      context.lineWidth = '10';
+      context.strokeStyle = 'rgba(255,255,0,0.4)';
+      context.lineWidth = '8';
       context.moveTo(x1, y1);
       context.lineTo(x2, y2);
       context.stroke();
       context.closePath();
     }
   
-    dragElement(dv:HTMLDivElement, bts:HTMLButtonElement[]) {
-      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      let moved = false;
-      let self = this;
-
-      for(let bt of bts) {
-        bt.onmousedown = mouseDown;
-        bt.ontouchstart = touch;
-      }
-
-      function touch(e:TouchEvent) {
-        moved=false;
-        e = e || window.event;
-        e.preventDefault();
-        pos3 = e.touches[0].clientX;
-        pos4 = e.touches[0].clientY;
-        document.ontouchmove = touchmove;
-        document.ontouchend = untouch;
-      }
-
-      function touchmove(e:TouchEvent) {
-        moved = true;
-        e = e || window.event;
-        e.preventDefault();
-        pos1 = pos3 - e.changedTouches[0].clientX;
-        pos2 = pos4 - e.changedTouches[0].clientY;
-        pos3 = e.changedTouches[0].clientX;
-        pos4 = e.changedTouches[0].clientY;
-        dv.style.top = (dv.offsetTop - pos2) + "px";
-        dv.style.left = (dv.offsetLeft - pos1) + "px";
-      }
-
-      function untouch(e:TouchEvent) {
-        document.ontouchmove = null;
-        document.ontouchend = null;
-        const id:string = (e.target as HTMLElement).id;
-        if(moved==true)
-          return;
-        if(id=="btMarker")
-          self.bookmarkPage();
-        else if(id=="back")
-          self.back();
-        else if(id=="forward")
-          self.forward();
-        else if(id=="btRubber")
-          self.rubber();
-        else if(id=="btHome")
-          self.home();
-        else if(id=="btEye")
-          self.eye();
-      }
-  
-      function mouseDown(e: any) {
-        moved=false;
-        e = e || window.event;
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = mouseUp;
-        document.onmousemove = elementDrag;
-      }
-  
-      function elementDrag(e: any) {
-        moved = true;
-        e = e || window.event;
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        dv.style.top = (dv.offsetTop - pos2) + "px";
-        dv.style.left = (dv.offsetLeft - pos1) + "px";
-      }
-  
-      function mouseUp(e: any) {
-        if(moved==false && e.toElement.id=="btMarker")
-          self.bookmarkPage();
-        if(moved==false && e.toElement.id=="back")
-          self.back();
-        if(moved==false && e.toElement.id=="forward")
-          self.forward();
-        if(moved==false && e.toElement.id=="btRubber")
-          self.rubber();
-        if(moved==false && e.toElement.id=="btHome")
-          self.home();
-        if(moved==false && e.toElement.id=="btEye")
-          self.eye();
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
-  
-    }
-  
-    volumeButtons() {
+    private volumeButtons() {
       const onVolumeButtonPressed = ({ direction }: VolumeButtonPressed) => {
         if (direction === 'up') {
           this.back();
         } else {
           this.forward();
         }
+        this.changeDetectorRef.detectChanges();
       };
       CapacitorVolumeButtons.addListener('volumeButtonPressed', onVolumeButtonPressed);
     }
